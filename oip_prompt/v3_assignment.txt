@@ -1,0 +1,108 @@
+You will receive a document and a list of generalized topics (merged from many fine-grained topics). Your task is to:
+1. Assign the document to the most relevant topics from the provided list
+Note: Each topic is broad and may include several sub-topics or themes. Choose any topic that best represents the main content of the document.
+2. For each assigned topic, extract keyword stems (common prefixes) that appear in the document and are relevant to that topic
+
+[Topics]
+{topics}
+
+[CRITICAL Requirements for Keywords]
+- Extract the STEM (common prefix) of words that appear in the document
+- PRIORITIZE single word stems over multi-word phrases
+- AVOID technical/academic terms and jargon (e.g., mRNA, RNA, siRNA, CRISPR, etc.)
+- Focus on general business and operational terms
+- Find the common prefix that covers different forms of the same word
+- Each keyword stem must be derived from words that actually appear in the document
+- Prefer common word stems that describe business activities, relationships, and processes
+
+[Stem Extraction Rules]
+1. For verbs: Find the common prefix across different tenses
+   - engage, engaging, engages, engaged → "engag"
+   - develop, developing, develops, developed → "develop"
+   - collaborate, collaborating, collaborates, collaborated → "collaborat"
+
+2. For nouns: Find the common prefix across singular/plural forms
+   - partner, partners → "partner"
+   - agreement, agreements → "agreement"
+   - technology, technologies → "technolog"
+
+3. For adjectives: Find the base form or common prefix
+   - exclusive, exclusively → "exclusiv"
+   - innovative, innovation → "innovat"
+
+4. Keep simple words as-is if they don't have common variations
+   - "research" → "research"
+   - "patent" → "patent"
+
+[Keyword Selection Priority]
+1. Single word stems from common business terms
+2. Stems that represent business activities, relationships, and processes
+3. Avoid technical abbreviations and scientific terminology stems
+4. Avoid proper nouns unless they represent a category
+
+[Output Format]
+[1] <TopicName>
+    [2] <word_stem_from_document>
+    [2] <another_word_stem>
+    ...
+
+[Examples]
+Example 1: Stem extraction
+Document:
+"Our customers provide feedback through an online innovation portal, which we use to co-develop future features through collaborative workshops."
+Your response:
+[1] Customer Engagement
+    [2] customer
+    [2] feedback
+    [2] innovat
+    [2] develop
+    [2] collaborat
+    [2] workshop
+
+Example 2: Business terms with stems
+Document:
+"We license our technology patents to external partners through exclusive agreements and collaborate with universities on research projects."
+Your response:
+[1] IP Licensing
+    [2] licens
+    [2] technolog
+    [2] patent
+    [2] external
+    [2] partner
+    [2] exclusiv
+    [2] agreement
+[1] University Collaboration
+    [2] collaborat
+    [2] universit
+    [2] research
+    [2] project
+
+Example 3: What to extract vs avoid
+Document: "The company develops siRNA therapeutics using advanced delivery platforms and manufacturing processes."
+EXTRACT: [2] develop, [2] deliver, [2] platform, [2] manufactur, [2] process
+AVOID: [2] siRNA, [2] therapeutics (too technical)
+
+Example 4: Handling different word forms
+Document: "We are developing partnerships with partners who partner with us in collaborative developments."
+Your response:
+[1] External Partnerships
+    [2] develop (covers developing, developments)
+    [2] partner (covers partnerships, partners, partner)
+    [2] collaborat (covers collaborative)
+
+[Instructions]
+1. Read the document carefully and identify relevant topics
+2. For each topic, scan the document for words that:
+   - Are semantically related to the topic
+   - Can be reduced to meaningful stems
+   - Are general business/operational terms rather than technical jargon
+   - Actually appear in some form in the document
+3. Extract the common stem/prefix that covers different forms of the word
+4. If a word doesn't have variations, use the base form
+5. If no topics are relevant, return "None"
+6. Prioritize extracting 3-8 word stems per topic
+
+[Document]
+{document}
+
+Your response:

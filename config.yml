@@ -1,0 +1,24 @@
+verbose: True
+
+generation_raw:
+  prompt: "oip_prompt/v1_generation_raw.txt"
+  seed: "oip_prompt/seed_topics.txt"
+  raw_topic_output: "data/raw_topic_output.csv"
+  input: "/root/autodl-tmp/10k.jsonl"
+  output: "data/output/raw_topics.md"
+  output_index: "data/output/raw_topics_index.jsonl"
+
+refining: True
+
+# token计数估计
+tokenizer:
+  qwen3: ./tokenizer/qwen3
+
+assignment:
+  topic_output: "data/output/assignment_topic.md"
+  keywords_output: "data/output/assignment_keywords.json"
+  prompt: "oip_prompt/v3_assignment.txt"
+
+stat:
+  output: 'data/output/stat.jsonl'
+  

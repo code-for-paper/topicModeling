@@ -1,0 +1,8 @@
+﻿,tobinq,log_at,xrdint,roa,leverage,Marketing & Commercialization Cooperation,Marketing & Commercialization Cooperation_sq
+tobinq,1.000,,,,,,
+log_at,-0.046,1.000,,,,,
+xrdint,0.032,-0.232*,1.000,,,,
+roa,0.168*,0.307*,-0.355*,1.000,,,
+leverage,-0.154*,0.149*,-0.174*,0.147*,1.000,,
+Marketing & Commercialization Cooperation,0.009,0.109*,-0.090*,0.024,-0.004,1.000,
+Marketing & Commercialization Cooperation_sq,0.053,0.045,-0.055,0.023,-0.030,0.881*,1.000

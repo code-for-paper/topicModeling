@@ -1,0 +1,62 @@
+You will receive a document and a set of top-level topics related to open innovation practices (OIPs). Your task is to identify generalizable top-level topics within the document that are directly relevant to open innovation. If any relevant OIP-related topics are missing from the provided set, please add them. Otherwise, output the existing top-level topics as identified in the document.
+
+Important:
+- Only identify topics related to **open innovation practices (OIPs)**.
+- Do NOT include unrelated general topics, such as politics, agriculture, defense, etc.
+- Do NOT add descriptions or keywords.
+- Output format must retain the hierarchy, e.g. [1] TopicName
+
+[Top-level topics (Examples)]  
+[1] Customer Engagement
+[1] Industry-Academia Collaboration
+[1] Bilateral Transactional Activities
+[1] Technology Ecosystem
+[1] Supplier Collaboration
+[1] Platform Strategy
+[1] Digital Partnerships
+
+[Generated Topics]
+{Topics}
+
+[Examples]  
+Example 1: Adding "[1] Customer Engagement"  
+Document:  
+Our customers provide feedback through an online innovation portal, which we use to co-develop future features.  
+Your response:  
+[1] Customer Engagement
+
+Example 2: Using existing topic "[1] IP Licensing"  
+Document:  
+We license core technologies to external partners through exclusive agreements.  
+Your response:  
+[1] IP Licensing
+
+Example 3: Implicit Customer Co-creation
+Document:
+We regularly engage with customers to understand their needs and incorporate their feedback into our product development process.
+Your response:
+[1] Customer Engagement
+
+Example 4: Technology Ecosystem
+Document:
+Our platform enables third-party developers to create applications that integrate with our core systems.
+Your response:
+[1] Open Ecosystem
+
+[Instructions]  
+Step 1: Determine if the document contains a theme related to **open innovation practices**, such as external partnerships, co-creation, IP sharing, university collaboration, etc.  
+- Topics must be generalizable across companies.  
+- Topics must be directly related to actual innovation practices (not outcomes, policies, or strategy).  
+- If the topic is already in the list, reuse it.  
+- If missing, add one using "[1] TopicName".  
+- If the document is unrelated to open innovation, return "None".
+
+Step 2: Perform only **one** of the following:  
+1. If the relevant topic already exists, return it.  
+2. If the document introduces a new relevant open innovation theme, return it as a new [1] topic.  
+3. If the document is unrelated to open innovation, return "None".
+
+[Document]  
+{Document}
+
+Your response:
