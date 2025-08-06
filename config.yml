@@ -4,7 +4,7 @@ generation_raw:
   prompt: "oip_prompt/v1_generation_raw.txt"
   seed: "oip_prompt/seed_topics.txt"
   raw_topic_output: "data/raw_topic_output.csv"
-  input: "/root/autodl-tmp/10k.jsonl"
+  input: "data/10k_filtered.jsonl"
   output: "data/output/raw_topics.md"
   output_index: "data/output/raw_topics_index.jsonl"
 
