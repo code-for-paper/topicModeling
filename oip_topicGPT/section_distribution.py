@@ -7,11 +7,11 @@ src_df = pd.read_csv(src_path)
 
 cik_gsector = {}
 
-# 方法1：去重并只保留第一个有效值
+# Method 1: Remove duplicates and keep only the first valid value
 for _, row in src_df.iterrows():
     if pd.isna(row['gsector']) or row['gsector'] == '' or pd.isna(row['cik']):
         continue
-    # 只有当cik不存在时才添加，避免重复
+    # Only add when cik doesn't exist to avoid duplicates
     if row['cik'] not in cik_gsector:
         cik_gsector[row['cik']] = int(row['gsector'])
 
@@ -31,18 +31,18 @@ topics = [ "Supplier & Manufacturing Collaboration",
 
 obs_all = len(assign_df)
 
-# 做一个df表  列有 gsector obs topics所有列
+# Create a df table with columns: gsector, obs, and all topic columns
 df = pd.DataFrame(columns=['gsector', 'obs'] + topics)
 
 for id,ind in enumerate(industry):
     ind_df = assign_df[assign_df['gsector'] == ind]
-    # 统计各个topic在该行业的数量
+    # Count the number of each topic in this industry
     # print(len(ind_df))
     obs = len(ind_df)
     
     for topic in topics:
         topic_df = ind_df[ind_df[topic] > 0]
-        # 统计各个topic在该行业的数量
+        # Count the number of each topic in this industry
         print(topic, len(topic_df) / obs_all)
         df.loc[id, topic] = len(topic_df) / obs_all
     df.loc[id, 'gsector'] = ind
@@ -52,19 +52,19 @@ for id,ind in enumerate(industry):
     
     # break
     
-# 添加汇总行
+# Add summary row
 total_row_id = len(industry)
 df.loc[total_row_id, 'gsector'] = 'All sectors'
-df.loc[total_row_id, 'obs'] = df['obs'].sum()  # 所有行业的obs加和
+df.loc[total_row_id, 'obs'] = df['obs'].sum()  # Sum of obs across all industries
 
-# 计算所有topic列的加和
+# Calculate sum of all topic columns
 for topic in topics:
     df.loc[total_row_id, topic] = df[topic].sum()
     
 print(df)
 
-# 将数值列保留3位小数
-numeric_columns = topics + ['obs']  # 需要格式化的数值列
+# Round numeric columns to 3 decimal places
+numeric_columns = topics + ['obs']  # Numeric columns to format
 for col in numeric_columns:
     if col in df.columns:
         df[col] = df[col].round(3)

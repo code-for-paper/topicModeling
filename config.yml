@@ -8,11 +8,8 @@ generation_raw:
   output: "data/output/raw_topics.md"
   output_index: "data/output/raw_topics_index.jsonl"
 
-refining: True
+# refining: True
 
-# token计数估计
-tokenizer:
-  qwen3: ./tokenizer/qwen3
 
 assignment:
   topic_output: "data/output/assignment_topic.md"

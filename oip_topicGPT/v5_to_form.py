@@ -10,36 +10,36 @@ stat_path = './data/output/stat.jsonl'
 
 df = pd.read_csv(raw_table_path, dtype={'cik': str})
 
-# 选取必要字段
+# Select necessary fields
 required_cols = [
     'cik', 'fyear', 'datadate', 'at', 'lt', 'ni', 'xrd', 'sale','ppent',
-    'prcc_f', 'csho'  # 用于计算 Tobin's Q
+    'prcc_f', 'csho'  # For calculating Tobin's Q
 ]
 df = df[required_cols].copy()
 
-# 替换非法值（如 0），避免除零错误
+# Replace invalid values (like 0) to avoid division by zero errors
 df.replace([np.inf, -np.inf], np.nan, inplace=True)
 
-# 丢弃任何关键列为空的行（严格过滤）
+# Drop rows with any key columns being null (strict filtering)
 df.dropna(subset=required_cols, inplace=True)
 
-# 构造变量
-df['log_at'] = np.log(df['at']) #公司规模（以资产为基础的对数化规模指标） 控制变量：控制公司大小对 Tobin's Q 的影响
-# df['leverage'] = df['lt'] / df['at'] # 资产负债率（总负债占总资产的比例）控制变量：反映公司财务杠杆
-df['leverage'] = df['ppent'] / df['at'] # Capital intensity 资本密集强度
-df['roa'] = df['ni'] / df['at'] #资产收益率（净利润除以总资产） 控制变量：衡量公司盈利能力
-df['xrdint'] = df['xrd'] / df['sale'] # R&D -> ✔ 可作为 解释变量（用于检验 R&D 本身对 Tobin's Q 的影响）✔ 或与 OIP 交互项：OIP × xrdint（检验互补性）
-df['xrdint'] = np.log1p(df['xrdint'])  # 如果后续模型做标准化更合适
-df['tobinq'] = (df['prcc_f'] * df['csho'] + df['lt']) / df['at'] # Tobin's Q 值，衡量企业市场价值相对于账面资产的溢价 被解释变量（因变量）：用来衡量企业绩效
+# Construct variables
+df['log_at'] = np.log(df['at']) # Company size (asset-based log scale indicator) Control variable: control company size impact on Tobin's Q
+# df['leverage'] = df['lt'] / df['at'] # Debt-to-asset ratio (total debt as proportion of total assets) Control variable: reflects company financial leverage
+df['leverage'] = df['ppent'] / df['at'] # Capital intensity
+df['roa'] = df['ni'] / df['at'] # Return on assets (net income divided by total assets) Control variable: measures company profitability
+df['xrdint'] = df['xrd'] / df['sale'] # R&D -> ✔ Can be used as explanatory variable (to test R&D's own impact on Tobin's Q) ✔ Or interaction with OIP: OIP × xrdint (test complementarity)
+df['xrdint'] = np.log1p(df['xrdint'])  # If subsequent model standardization is more appropriate
+df['tobinq'] = (df['prcc_f'] * df['csho'] + df['lt']) / df['at'] # Tobin's Q value, measures enterprise market value premium relative to book assets Dependent variable: used to measure enterprise performance
 
-# 保留最终用于回归的字段
+# Keep final fields for regression
 final_cols = ['cik', 'fyear', 'datadate', 'log_at', 'leverage', 'roa', 'xrdint', 'tobinq']
 regression_df = df[final_cols].copy()
 
-# 查看前几行
+# View first few rows
 print(regression_df.head())
 
-# 可选：保存处理后的数据
+# Optional: save processed data
 # regression_df.to_csv('./data/processed/regression_input.csv', index=False)
 
 stat_dict = {}
@@ -57,10 +57,10 @@ with open(stat_path,'r') as f:
             # cnt += len(forms.keys())
             stat_dict[cik] = {}
             for date in forms:
-                # 有多个topic
+                # Multiple topics
                 score_list = forms[date]['score']
                 
-                #refer date
+                # refer date
                 refer_date = forms[date]['refer_date']
                 refer_tobins_q = forms[date]['refer_tobins_q']
                 oip_score = forms[date]['oip_score']
@@ -71,7 +71,7 @@ with open(stat_path,'r') as f:
                     'oip_score':oip_score
                 }
 
-# print(f'共有{cnt}个行')
+# print(f'Total {cnt} rows')
 
 topic_list = [
     "Supplier & Manufacturing Collaboration",
@@ -91,13 +91,13 @@ columns = ['cik', 'fyear', 'datadate',
            'refer_tobins_q','form_date'
           ] + topic_list
 
-# 创建一个空的pandas csv表格
+# Create empty pandas csv table
 result_df = pd.DataFrame(columns=columns
                         )
 
 topic_index = {topic: i for i, topic in enumerate(topic_list)}
 
-# 遍历df
+# Iterate through df
 real_cnt = 0
 for index, row in regression_df.iterrows():
     cik = row['cik']
@@ -111,7 +111,7 @@ for index, row in regression_df.iterrows():
     if cik in stat_dict:
         form_dict = stat_dict[cik]
         if datadate in form_dict:
-            # 整理topic score列表 按照topic_list顺序 没有的就置为空 然后把列表合并
+            # Organize topic score list in topic_list order, set missing ones to empty, then merge lists
             score_list = form_dict[datadate]['score_list']
             index_score = {
                 id:0 for id in range(len(topic_list))
@@ -125,7 +125,7 @@ for index, row in regression_df.iterrows():
                 index_score[topic_index[topic]] = score
                 
             index_score[topic_index['OIP']] = form_dict[datadate]['oip_score']
-            # 加入一行
+            # Add one row
             refer_tobins_q = form_dict[datadate]['refer_tobins_q']
             form_date = form_dict[datadate]['date']
             
@@ -133,6 +133,6 @@ for index, row in regression_df.iterrows():
             real_cnt += 1
 
 print(result_df)
-print(f'有{real_cnt}个合法的行')
+print(f'{real_cnt} valid rows')
 
-result_df.to_csv('./data/output/regression_input.csv', index=False)
+result_df.to_csv('./data/output/regression_input_example.csv', index=False)

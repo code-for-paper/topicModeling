@@ -5,14 +5,14 @@ from util import get_config, load_corpus
 from tqdm import tqdm
 from collections import Counter
 """
-根据keywords output的字典 来访问文件 并进行统计
-过滤: 去除掉在文中出现次数少于5次的keyword
-统计信息有: 某个topic下的某个keyword的占据form的单词数量比例 
+Access files based on keywords output dictionary and perform statistics
+Filter: remove keywords that appear less than 5 times in the text
+Statistics: proportion of word count that certain keywords under a topic occupy in the form
 
-输入:
-    keywords.json路径
-    corpus路径
-    keywords.json的格式为:
+Input:
+    keywords.json path
+    corpus path
+    keywords.json format:
     {
     "0001768224": {
         "2025-03-06": [
@@ -31,9 +31,9 @@ from collections import Counter
         ]
     }
 }
-输出:
-    一个字典 包含各个公司的一个报表的统计信息
-    统计信息是各个topic的分数 某个topic分数由这个topic的所有keyword的单词数量比例 求和得到
+Output:
+    A dictionary containing statistical information for each company's report
+    Statistics are scores for each topic. A topic score is the sum of word count proportions for all keywords of that topic
     {
         'cik':cik,
         'forms':{
@@ -50,15 +50,15 @@ from collections import Counter
 """
 
 def clean_duplicate(words: set[str]) -> set[str]:
-    # words中有的单词可能是其他单词的前缀，只保留最短的前缀，删掉其他的
+    # Some words in words may be prefixes of other words, keep only the shortest prefix, delete others
     words_list = sorted(words, key=len)
     result = set()
     
     for word in words_list:
-        # 检查当前单词是否以已添加的任何单词为前缀
+        # Check if current word starts with any already added word as prefix
         is_duplicate = False
         for existing in result:
-            if word.startswith(existing):  # 当前word以existing为前缀
+            if word.startswith(existing):  # Current word has existing as prefix
                 is_duplicate = True
                 break
         
@@ -72,14 +72,14 @@ def stat(corpus_path, keywords_path, stat_path):
     with open(keywords_path, 'r') as f:
         keywords_dict: dict = json.load(f)
 
-    # 删除原来的stat文件
+    # Delete original stat file
     with open(stat_path, 'w') as f:
         f.truncate()
     # return
 
     corpus = load_corpus(corpus_path)
 
-    for i, company in enumerate(tqdm(corpus, desc='公司')):
+    for i, company in enumerate(tqdm(corpus, desc='Companies')):
         cik = company['cik']
         # print(f'cik: {cik}')
         if cik not in keywords_dict:
@@ -98,16 +98,16 @@ def stat(corpus_path, keywords_path, stat_path):
             if date not in date_topic_dict:
                 continue
             # print(f'{cik} {date} ','-'*50)
-            # 一个日期对应一个文档 以及统计信息
+            # One date corresponds to one document and statistics
             result = []
             topics = date_topic_dict[date]
 
-            business_text = tenk['form'][:5000]  # 截断最长为5000字符
-            # 把文本预处理为单词列表
+            business_text = tenk['form'][:5000]  # Truncate to max 5000 characters
+            # Preprocess text into word list
             words = business_text.split()
-            # 对每个单词进行计数
+            # Count each word
             word_counts = Counter(words)
-            # 计算总单词数
+            # Calculate total word count
             total_words = len(words)
             if type(topics) != list:
                 continue
@@ -127,7 +127,7 @@ def stat(corpus_path, keywords_path, stat_path):
                 
                 all_keywords.update(keywords)
                 
-                # 关键词 一般是前缀
+                # Keywords are generally prefixes
                 keyword_counter = Counter()
                 for keyword in keywords:
                     for word in word_counts:
@@ -135,11 +135,11 @@ def stat(corpus_path, keywords_path, stat_path):
                         if word.startswith(keyword):
                             keyword_counter[keyword] += word_counts[word]
 
-                # 归一化
+                # Normalize
                 for key in keyword_counter:
-                    # 少于等于5次的单词不算入关键词贡献
+                    # Words appearing 5 times or less don't count towards keyword contribution
                     if keyword_counter[key] < 5:
-                        # print(f'key {key} 出现次数:{keyword_counter[key]}')
+                        # print(f'key {key} occurrence count:{keyword_counter[key]}')
                         pass
                     else:
                         topic_score['score'] += keyword_counter[key]
@@ -149,7 +149,7 @@ def stat(corpus_path, keywords_path, stat_path):
                 if topic_score['score'] > 0:
                     result.append(topic_score)
             
-            # 计算OIP score 因为可能不同的topic有同一个keyword 为了避免重复 独立计算
+            # Calculate OIP score. Since different topics may have same keywords, calculate independently to avoid duplication
             all_keywords = clean_duplicate(all_keywords)
             oip_score = 0
             for keyword in all_keywords:
@@ -158,7 +158,7 @@ def stat(corpus_path, keywords_path, stat_path):
                         oip_score += word_counts[word]
             oip_score /= total_words
             
-            # 把结果加入到scores中
+            # Add results to scores
             if len(result) > 0:
                 scores['forms'][date] = {
                     'score': result,
@@ -167,7 +167,7 @@ def stat(corpus_path, keywords_path, stat_path):
                     'oip_score': oip_score
                 }
 
-        # scores存到文件中
+        # Save scores to file
         if len(scores['forms']) > 0:
             with open(stat_path, 'a') as f:
                 json.dump(scores, f)

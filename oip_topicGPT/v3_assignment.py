@@ -4,12 +4,12 @@ import json
 import regex as re
 
 """ 
-document有一系列主题 对于每个主题 要从文中找出符合该主题的关键字 
-输入: document, topics:[
+Document has a series of topics. For each topic, find keywords from the text that match the topic.
+Input: document, topics:[
     [1] Customer Engagement  
     [2] University Collaboration 
     ],
-输出:
+Output:
 [1] Customer Engagement  
     [2] customers  
     [2] co-creation  
@@ -20,7 +20,7 @@ document有一系列主题 对于每个主题 要从文中找出符合该主题�
     [2] collaborative_experiments  
     [2] labs
     
-keywords_output的格式为
+keywords_output format:
 {
     'cik':{
         'date':{
@@ -32,25 +32,17 @@ keywords_output的格式为
     }
 }
 
-flag_dict的格式为
+flag_dict format:
 {
     'cik':{
         'date':{
-            'topic':[] # 这里topic没啥用 实际还是得等到分配的时候给主题
+            'topic':[] # topic is not useful here, still need to assign topics during assignment
         }
     }
 }
 
-prompt_template 需要输入 一级topics document 
+prompt_template needs input: level 1 topics, document 
 """
-
-# api_client = ApiClient('./tokenizer/deepseek-r1')
-# corpus_path = ''  # 10-k数据集
-# prompt_file = ''  # assignment和keywords生成的prompt模版
-# topic_file = ''  # 之前阶段得到的topic列表
-# flag_file = ''  # jsonl文件 这里要先加载然后处理为一个dict
-# topic_output_file = ''  # 输出的一级+二级topic的地址
-# keywords_output_file = ''  # 保存:cik的年报的一级topic和二级keywords的字典
 
 
 def assign_and_keywords_generate(
@@ -64,22 +56,23 @@ def assign_and_keywords_generate(
     verbose: bool = False
 ):
     """
-    给定10-k数据集 一级topic 二级topic的prompt 一级topic的flag 生成每个公司每个日期的二级topic和keywords
+    Given 10-k dataset, level 1 topics, level 2 topic prompts, level 1 topic flags,
+    generate level 2 topics and keywords for each company and date
 
     Args:
         api_client: ApiClient
-        corpus_path: 10-k数据集地址
-        prompt_file: assignment和keywords生成的prompt模版
-        topic_file: 之前阶段得到的topic列表
-        flag_file: jsonl文件 这里要先加载然后处理为一个dict
-        topic_output_file: 输出的一级+二级topic的地址
-        keywords_output_file: 保存:cik的年报的一级topic和二级keywords的字典
-        verbose: 是否打印详细信息
+        corpus_path: 10-k dataset path
+        prompt_file: assignment and keywords generation prompt template
+        topic_file: topic list from previous stage
+        flag_file: jsonl file, need to load and process into a dict
+        topic_output_file: output path for level 1 + level 2 topics
+        keywords_output_file: save: cik annual report level 1 topics and level 2 keywords dictionary
+        verbose: whether to print detailed information
     """
 
     keywords_output = {}  # return
 
-    # 加载一级topic文件
+    # Load level 1 topic file
     tree = TopicTree().from_file(topic_file)  # return
     print(f'topic from file :{tree.to_prompt()}')
     # return 
@@ -90,7 +83,7 @@ def assign_and_keywords_generate(
             cik = cik_dict['cik']
             indexes = cik_dict['indexes']
             
-            # 修复：初始化cik字典
+            # Fix: initialize cik dictionary
             if cik not in flag_dict:
                 flag_dict[cik] = {}
             
@@ -98,20 +91,20 @@ def assign_and_keywords_generate(
                 topics = indexes[date]
                 flag_dict[cik][date] = topics
 
-    # 加载语料库
-    corpus = load_corpus(corpus_path)  # 修复：函数名从load_dataset改为load_corpus
-    # 加载prompt
+    # Load corpus
+    corpus = load_corpus(corpus_path)  # Fix: function name from load_dataset to load_corpus
+    # Load prompt
     prompt_template = load_prompt(prompt_file)
-    # 加载一级topic
+    # Load level 1 topics
     top_topic_str = tree.top_topic_to_prompt()
 
-    for i, company in enumerate(tqdm(corpus, desc='公司')):
+    for i, company in enumerate(tqdm(corpus, desc='Companies')):
         if (i+1) % 5 == 0:
             tree.to_file(topic_output_file)
             with open(keywords_output_file, 'w') as f:
                 json.dump(keywords_output, f, indent=4, ensure_ascii=False)
                 
-        # 先过滤没有topic的公司
+        # Filter companies without topics first
         cik = company['cik']
         if cik not in flag_dict:
             continue
@@ -119,24 +112,24 @@ def assign_and_keywords_generate(
         tenks = company['10-k']
         for item in tenks:
             date = str(item['date']).split()[0]
-            # 修复：检查date是否在flag_dict[cik]中
+            # Fix: check if date is in flag_dict[cik]
             if date not in flag_dict[cik]:
                 continue
-            # 现在文档是有topic的，现在先准备好prompt
+            # Now document has topics, prepare prompt
             business_text = item['form'][-10000:]
             prompt = prompt_template.format(
                 topics=top_topic_str, document=business_text)
-            # 现在有prompt了 调用api
+            # Now have prompt, call api
             response = api_client.generate(prompt)
 
             if response == 'None':
                 continue
 
-            # 解析response文本 用正则表达式提取主题和关键词
+            # Parse response text using regex to extract topics and keywords
             def parse_response(response_text):
                 """
-                解析API响应文本,将层级结构转换为字典列表
-                输入格式:
+                Parse API response text, convert hierarchical structure to dictionary list
+                Input format:
                 [1] Customer Engagement  
                     [2] customers  
                     [2] co-creation  
@@ -144,7 +137,7 @@ def assign_and_keywords_generate(
                     [2] universities  
                     [2] joint_research  
 
-                输出格式:
+                Output format:
                 [
                     {
                         'topic':'Customer Engagement',
@@ -158,59 +151,59 @@ def assign_and_keywords_generate(
                     current_topic = None
                     current_keywords = []
 
-                    # 正则表达式模式
-                    topic_pattern = re.compile(r'\[1\]\s*([^\[\]]+)\s*$')  # 匹配一级主题
+                    # Regex patterns
+                    topic_pattern = re.compile(r'\[1\]\s*([^\[\]]+)\s*$')  # Match level 1 topics
                     keyword_pattern = re.compile(
-                        r'\[2\]\s*([^\[\]]+)\s*$')  # 匹配二级关键词
+                        r'\[2\]\s*([^\[\]]+)\s*$')  # Match level 2 keywords
 
                     for line in lines:
                         line = line.strip()
                         if not line:
                             continue
 
-                        # 匹配一级主题
+                        # Match level 1 topics
                         topic_match = topic_pattern.match(line)
                         if topic_match:
-                            # 如果之前有主题，先保存
+                            # Save previous topic if exists
                             if current_topic is not None:
                                 result.append({
                                     'topic': current_topic,
                                     'keywords': current_keywords
                                 })
 
-                            # 开始新主题
+                            # Start new topic
                             current_topic = topic_match.group(1).strip()
                             current_keywords = []
                             continue
 
-                        # 匹配二级关键词
+                        # Match level 2 keywords
                         keyword_match = keyword_pattern.match(line)
                         if keyword_match and current_topic is not None:
                             keyword = keyword_match.group(1).strip()
                             current_keywords.append(keyword)
 
-                    # 保存最后一个主题
+                    # Save last topic
                     if current_topic is not None:
                         result.append({
                             'topic': current_topic,
                             'keywords': current_keywords
                         })
 
-                    # 检查解析结果是否有效
+                    # Check if parsing result is valid
                     if not result or any(not item['keywords'] for item in result):
                         return None
 
                     return result
 
                 except Exception as e:
-                    # 任何解析错误都返回None
+                    # Return None for any parsing errors
                     return None
                     
-            # 解析响应
+            # Parse response
             parsed_topics = parse_response(response)
             if parsed_topics is None:
-                # 存一下错误信息 todo
-                # 修复：确保字典结构存在再赋值
+                # Save error info todo
+                # Fix: ensure dictionary structure exists before assignment
                 if cik not in keywords_output:
                     keywords_output[cik] = {}
                 if date not in keywords_output[cik]:
@@ -218,7 +211,7 @@ def assign_and_keywords_generate(
                 keywords_output[cik][date] = 'error'
                 continue
 
-            # 遍历topics 把生成的二级标题添加到一级标题下面
+            # Iterate through topics, add generated level 2 titles under level 1 titles
             for item in parsed_topics:
                 topic = item['topic']
                 keywords = item['keywords']
@@ -230,7 +223,7 @@ def assign_and_keywords_generate(
                 except:
                     print(f'parent_node not found for {topic}')
 
-            # 检查并初始化字典结构
+            # Check and initialize dictionary structure
             if cik not in keywords_output:
                 keywords_output[cik] = {}
             if date not in keywords_output[cik]:

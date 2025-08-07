@@ -1,5 +1,5 @@
-- v5和v6文件需要根据实际得到的topic list来修改
-- v6在做regression的时候，对不同的指标做分析，需要注释掉其他指标。
-比如做一次项分析的时候，需要注释掉交叉项指标，做二次项分析的时候，需要注释掉交叉项指标。
-交叉项列表中对应指标有效的前提是，一次项对应指标没有被注释。
-- util.py中可以配置gpt模型供应商的base-url和api-key
+- The v5 and v6 files need to be modified according to the actual topic list obtained
+- When v6 performs regression, it analyzes different indicators and needs to comment out other indicators.
+For example, when doing linear term analysis, cross-term indicators need to be commented out; when doing quadratic term analysis, cross-term indicators need to be commented out.
+The prerequisite for the corresponding indicators in the cross-term list to be effective is that the corresponding linear term indicators are not commented out.
+- In util.py, you can configure the base-url and api-key of the GPT model provider

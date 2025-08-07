@@ -22,7 +22,7 @@ def get_config():
 
 def get_model():
     model = ChatOpenAI(
-        base_url=os.getenv("OPENAI_API_BASE"), # 使用自定义gpt模型供应商的baseurl和api_key
+        base_url=os.getenv("OPENAI_API_BASE"), # Use custom GPT model provider's baseurl and api_key
         api_key=os.getenv("OPENAI_API_KEY"),
         model="gpt-4.1",
 
@@ -32,7 +32,7 @@ def get_model():
 
 def get_tokenizer(path):
     """
-    获取通义千问模型的tokenizer
+    Get Qwen model tokenizer
     """
     tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
 
@@ -46,26 +46,26 @@ def get_corpus(data_path, shuffle=True):
 
 def read_and_format_generation_raw_prompt(topics=None, document=None):
     """
-    读取generation_raw.txt文件并格式化为可用的prompt
+    Read generation_raw.txt file and format it into a usable prompt
 
     Args:
-        topics (str, optional): 要插入的顶级主题列表
-        document (str, optional): 要分析的文档内容
+        topics (str, optional): Top-level topic list to insert
+        document (str, optional): Document content to analyze
 
     Returns:
-        str: 格式化后的prompt字符串
+        str: Formatted prompt string
     """
-    # 读取模板文件
+    # Read template file
     template_path = './prompt/generation_raw.txt'
     try:
         with open(template_path, 'r', encoding='utf-8') as f:
             template = f.read()
     except FileNotFoundError as e:
-        # 如果相对路径不工作，尝试绝对路径
+        # If relative path doesn't work, try absolute path
         print(e)
         return None
 
-    # 格式化模板
+    # Format template
     formatted_prompt = template.format(
         Topics=topics if topics is not None else "{Topics}",
         Document=document if document is not None else "{Document}"
@@ -106,7 +106,7 @@ def load_sentence_transformer():
     device = "cuda" if torch.cuda.is_available(
     ) else "mps" if torch.backends.mps.is_available() else "cpu"
 
-    # 构建SentenceTransformer模型
+    # Build SentenceTransformer model
     word_embedding_model = models.Transformer(model_path)
     pooling_model = models.Pooling(
         word_embedding_model.get_word_embedding_dimension())
@@ -144,7 +144,7 @@ class TopicTree:
 
     def find_duplicates(self, lvl, name):
         """
-        按照名称和层级查找节点
+        Find nodes by name and level
         """
         return [
             node
@@ -154,13 +154,13 @@ class TopicTree:
     
     def find_top_parent(self,name):
         """
-        找到一级topic节点
+        Find first-level topic node
         """
         return self.find_duplicates(1,name)
 
     def add_node(self, lvl, name, count=1, parent_node: Node=None):
         """
-        添加一个新的节点到树中,如果已经存在，那么就合并然后更新count
+        Add a new node to the tree, if it already exists, merge and update count
         """
         if parent_node:
             existing = next(
@@ -174,7 +174,7 @@ class TopicTree:
 
     def to_prompt(self):
         """
-        将树转换为prompt
+        Convert tree to prompt
         """
         def traverse(node: Node, result=""):
             if node.lvl > 0:
@@ -216,9 +216,9 @@ class TopicTree:
             return f"[{node.lvl}] {node.name} (Count: {node.count})"
     
     def from_file(self, path):
-        """从文件中加载主题树结构"""
+        """Load topic tree structure from file"""
         tree = TopicTree()
-        current_parent = {0: tree.root}  # 用于追踪每一层的父节点
+        current_parent = {0: tree.root}  # Track parent nodes for each level
         
         with open(path, 'r') as f:
             for line in f:
@@ -226,7 +226,7 @@ class TopicTree:
                 if not line:
                     continue
                     
-                # 解析行内容
+                # Parse line content
                 try:
                     lvl = int(line[1])
                     if '(' in line:
@@ -236,55 +236,55 @@ class TopicTree:
                         name = line[3:].strip()
                         count = 1
                         
-                    # 找到正确的父节点并添加新节点
+                    # Find correct parent node and add new node
                     parent = current_parent[lvl-1] if lvl > 0 else tree.root
                     new_node = Node(name=name, lvl=lvl, count=count, parent=parent)
                     current_parent[lvl] = new_node
                     
                 except (ValueError, IndexError) as e:
-                    print(f"解析行失败: {line}, 错误: {str(e)}")
+                    print(f"Failed to parse line: {line}, error: {str(e)}")
                     continue
                     
         return tree
 
     def top_topic_to_prompt(self):
-        # 只把lvl为1的节点的topic拿出来 用\n拼接
+        # Extract only level 1 node topics and join with \n
         topics = [node.name for node in self.root.children if node.lvl == 1]
         return "\n".join(topics)
 
 if __name__ == "__main__":
-    # 测试用例1: 创建一个简单的主题树
+    # Test case 1: Create a simple topic tree
     tree1 = TopicTree()
     tree1.add_node(1, "Technology", 1, tree1.root)
     tree1.add_node(2, "AI", 1, tree1.root.children[0])
-    print("测试用例1 - 简单主题树:")
+    print("Test case 1 - Simple topic tree:")
     print(tree1.to_prompt())
 
-    # 测试用例2: 测试重复节点的合并
+    # Test case 2: Test duplicate node merging
     tree2 = TopicTree()
     tree2.add_node(1, "Sports", 1, tree2.root)
     tree2.add_node(2, "Football", 1, tree2.root.children[0])
-    # 添加重复节点，count应该增加
+    # Add duplicate node, count should increase
     tree2.add_node(2, "Football", 1, tree2.root.children[0])
-    print("\n测试用例2 - 重复节点合并:")
+    print("\nTest case 2 - Duplicate node merging:")
     print(tree2.to_prompt())
 
-    # 测试用例3: 测试查找重复节点
+    # Test case 3: Test finding duplicate nodes
     tree3 = TopicTree()
     tree3.add_node(1, "Music", 1, tree3.root)
     tree3.add_node(2, "Rock", 1, tree3.root.children[0])
     tree3.add_node(2, "Jazz", 1, tree3.root.children[0])
     duplicates = tree3.find_duplicates(2, "Rock")
-    print("\n测试用例3 - 查找重复节点:")
-    print(f"找到的重复节点数量: {len(duplicates)}")
+    print("\nTest case 3 - Find duplicate nodes:")
+    print(f"Number of duplicate nodes found: {len(duplicates)}")
     print(tree3.to_prompt())
     tree3.to_file("data/output/test_raw_topics.md")
 
-    # 空🌲
+    # Empty tree
     tree4 = TopicTree()
-    print("\n测试用例4 - 空🌲:")
+    print("\nTest case 4 - Empty tree:")
     print(tree4.to_prompt())
     
     tree4 = TopicTree().from_file("data/output/raw_topics.md")
-    print("\n测试用例5 - 从文件加载:")
+    print("\nTest case 5 - Load from file:")
     print(tree4.to_prompt())
