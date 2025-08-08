@@ -21,14 +21,14 @@ The research follows a systematic **topicGPT Process**:
 
 The research identifies eight primary categories of open innovation practices:
 
-- **Supplier & Manufacturing Collaboration**: Partnerships with suppliers and manufacturing entities
-- **Customer & Community Engagement**: Co-creation and collaboration with customers and communities
-- **Strategic & Joint Partnerships**: Strategic alliances and joint venture activities
-- **IP & Technology Licensing**: Intellectual property licensing and technology transfer
-- **Industry-Academia & Research Collaboration**: University partnerships and research collaborations
-- **Technology & Platform Ecosystems**: Platform-based innovation and ecosystem development
-- **Open Innovation & Ecosystem Strategy**: Comprehensive open innovation strategies
-- **Marketing & Commercialization Cooperation**: Collaborative marketing and commercialization efforts
+1. **Supplier and Manufacturing Collaboration**: Partnerships with suppliers and manufacturing entities
+2. **Customer and Community Engagement**: Co-creation and collaboration with customers and communities
+3. **Strategic and Joint Partnerships**: Strategic alliances and joint venture activities
+4. **IP and Technology Licensing**: Intellectual property licensing and technology transfer
+5. **Industry-Academia Collaboration**: University partnerships and research collaborations
+6. **Technology and Platform Ecosystems**: Platform-based innovation and ecosystem development
+7. **Open Innovation and Ecosystem Strategy**: Comprehensive open innovation strategies
+8. **Marketing and Commercialization Cooperation**: Collaborative marketing and commercialization efforts
 
 ### 3. Data Sources and Processing
 
@@ -50,10 +50,9 @@ The research reveals significant variation in open innovation practices across i
 
 ### Topic Prevalence Analysis
 
-1. **Customer & Community Engagement**: Most prevalent across sectors (55.7%)
-2. **Technology & Platform Ecosystems**: Second highest prevalence (50.8%)
-3. **Supplier & Manufacturing Collaboration**: Strong presence in manufacturing sectors (48.5%)
-4. **Marketing & Commercialization Cooperation**: Widespread adoption (66.3%)
+1. **Customer and Community Engagement**: Most prevalent across sectors (57.7%)
+2. **Technology and Platform Ecosystems**: Second highest prevalence (33.9%)
+3. **Marketing and Commercialization Cooperation**: Widespread adoption (23.9%)
 
 ## Technical Implementation
 
@@ -104,11 +103,3 @@ The research reveals significant variation in open innovation practices across i
 - Adjust prompts in `oip_prompt/` directory
 - Configure analysis parameters in `config.yml`
 - Customize regression variables in `v6_regression.py`
-
-## Future Research Directions
-
-- Extension to other document types (earnings calls, patents, etc.)
-- Temporal evolution analysis of OIP practices
-- Cross-country comparative studies
-- Integration with external innovation databases
-- Advanced NLP techniques for improved topic detection
