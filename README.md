@@ -5,7 +5,7 @@
 This research project employs advanced topic modeling techniques using GPT to analyze open innovation practices (OIPs) in corporate 10-K filings. The study identifies, categorizes, and quantifies various forms of open innovation activities across different industry sectors, providing insights into how companies engage in external collaboration and innovation partnerships.
 
 ## Research Methodology
-
+![Research Methodology Overview](assert/methodology.png)
 ### 1. Topic Generation and Processing Pipeline
 
 The research follows a systematic **topicGPT Process**:
@@ -37,22 +37,6 @@ The research identifies eight primary categories of open innovation practices:
 - **Sector Analysis**: Cross-industry analysis covering multiple GICS sectors
 - **Temporal Analysis**: Multi-year analysis with lagged financial indicators
 
-## Key Findings
-
-### Sector-wise OIP Distribution
-
-The research reveals significant variation in open innovation practices across industry sectors:
-
-- **Technology Sector (45)**: Highest overall OIP engagement (18.5%)
-- **Healthcare Sector (35)**: Strong focus on research collaboration (20.1% total OIP)
-- **Manufacturing Sectors (20, 25)**: Emphasis on supplier collaboration and customer engagement
-- **Financial Services (40)**: Limited but focused OIP activities
-
-### Topic Prevalence Analysis
-
-1. **Customer and Community Engagement**: Most prevalent across sectors (57.7%)
-2. **Technology and Platform Ecosystems**: Second highest prevalence (33.9%)
-3. **Marketing and Commercialization Cooperation**: Widespread adoption (23.9%)
 
 ## Technical Implementation
 
